@@ -33,10 +33,10 @@ const proposalsByMonth = [
 ]
 
 const proposalsByType = [
-  { name: "Nouveaux médicaments", value: 45, color: "hsl(var(--primary))" },
-  { name: "Révisions", value: 30, color: "hsl(var(--accent))" },
-  { name: "Protocoles", value: 15, color: "hsl(var(--success))" },
-  { name: "Autres", value: 10, color: "hsl(var(--warning))" },
+  { name: "New Medications", value: 45, color: "hsl(var(--primary))" },
+  { name: "Revisions", value: 30, color: "hsl(var(--accent))" },
+  { name: "Protocols", value: 15, color: "hsl(var(--success))" },
+  { name: "Others", value: 10, color: "hsl(var(--warning))" },
 ]
 
 const chartConfig = {
@@ -80,7 +80,7 @@ const upcomingMeetings = [
 const recentProposals = [
   {
     id: 1,
-    title: "Nouveau protocole antibiotiques",
+    title: "New Antibiotic Protocol",
     status: "pending",
     submittedBy: "Dr. Martin",
     date: "2024-01-10",
@@ -88,7 +88,7 @@ const recentProposals = [
   },
   {
     id: 2,
-    title: "Révision protocole chimiothérapie",
+    title: "Chemotherapy Protocol Revision",
     status: "approved",
     submittedBy: "Dr. Dubois",
     date: "2024-01-09",
@@ -96,7 +96,7 @@ const recentProposals = [
   },
   {
     id: 3,
-    title: "Ajout médicament immunothérapie",
+    title: "Immunotherapy Drug Addition",
     status: "rejected",
     submittedBy: "Dr. Leroy",
     date: "2024-01-08",
@@ -110,15 +110,15 @@ export default function Dashboard() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard CFT</h1>
+          <h1 className="text-3xl font-bold text-foreground">CFT Dashboard</h1>
           <p className="text-muted-foreground mt-1">
-            Vue d'ensemble des activités du Comité de Pharmacie et Thérapeutique
+            Overview of Pharmacy and Therapeutics Committee activities
           </p>
         </div>
         <div className="flex items-center space-x-2">
           <Button>
             <FileText className="mr-2 h-4 w-4" />
-            Nouvelle proposition
+            New Proposal
           </Button>
         </div>
       </div>
@@ -126,28 +126,28 @@ export default function Dashboard() {
       {/* KPI Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <KPICard
-          title="Propositions actives"
+          title="Active Proposals"
           value={42}
           change={{ value: "+12%", type: "increase" }}
           icon={FileText}
           gradient="primary"
         />
         <KPICard
-          title="Réunions ce mois"
+          title="Meetings This Month"
           value={3}
           change={{ value: "+1", type: "increase" }}
           icon={Calendar}
           gradient="accent"
         />
         <KPICard
-          title="Taux d'approbation"
+          title="Approval Rate"
           value="78%"
           change={{ value: "+5%", type: "increase" }}
           icon={CheckCircle}
           gradient="success"
         />
         <KPICard
-          title="En attente"
+          title="Pending"
           value={8}
           change={{ value: "-2", type: "decrease" }}
           icon={Clock}
@@ -162,10 +162,10 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center">
               <TrendingUp className="mr-2 h-5 w-5" />
-              Évolution des propositions
+              Proposal Evolution
             </CardTitle>
             <CardDescription>
-              Nombre de propositions soumises et approuvées par mois
+              Number of proposals submitted and approved per month
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -185,9 +185,9 @@ export default function Dashboard() {
         {/* Proposal Types */}
         <Card className="lg:col-span-3 shadow-card">
           <CardHeader>
-            <CardTitle>Types de propositions</CardTitle>
+            <CardTitle>Proposal Types</CardTitle>
             <CardDescription>
-              Répartition par catégorie
+              Distribution by category
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -220,7 +220,7 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center">
               <Calendar className="mr-2 h-5 w-5" />
-              Prochaines réunions
+              Upcoming Meetings
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -233,16 +233,16 @@ export default function Dashboard() {
                   <div className="space-y-1">
                     <h4 className="font-semibold text-sm">{meeting.title}</h4>
                     <p className="text-xs text-muted-foreground">
-                      {meeting.date} à {meeting.time}
+                      {meeting.date} at {meeting.time}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {meeting.proposals} propositions à examiner
+                      {meeting.proposals} proposals to review
                     </p>
                   </div>
                   <Badge 
                     variant={meeting.status === "urgent" ? "destructive" : "secondary"}
                   >
-                    {meeting.status === "urgent" ? "Urgent" : "Programmé"}
+                    {meeting.status === "urgent" ? "Urgent" : "Scheduled"}
                   </Badge>
                 </div>
               ))}
@@ -255,7 +255,7 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center">
               <FileText className="mr-2 h-5 w-5" />
-              Propositions récentes
+              Recent Proposals
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -268,7 +268,7 @@ export default function Dashboard() {
                   <div className="space-y-1">
                     <h4 className="font-semibold text-sm">{proposal.title}</h4>
                     <p className="text-xs text-muted-foreground">
-                      Par {proposal.submittedBy} • {proposal.date}
+                      By {proposal.submittedBy} • {proposal.date}
                     </p>
                   </div>
                   <div className="flex items-center space-x-2">
