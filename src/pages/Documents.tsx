@@ -16,7 +16,7 @@ import {
 const sampleDocuments = [
   {
     id: 1,
-    name: "Ordre du jour CFT - Janvier 2024.pdf",
+    name: "CFT Agenda - January 2024.pdf",
     type: "agenda",
     date: "2024-01-10",
     size: "2.4 MB",
@@ -25,7 +25,7 @@ const sampleDocuments = [
   },
   {
     id: 2,
-    name: "Protocole Antibiotiques v2.1.pdf",
+    name: "Antibiotic Protocol v2.1.pdf",
     type: "protocol",
     date: "2024-01-08",
     size: "1.8 MB",
@@ -34,7 +34,7 @@ const sampleDocuments = [
   },
   {
     id: 3,
-    name: "RAFP Immunothérapie.pdf",
+    name: "RAFP Immunotherapy.pdf",
     type: "rafp",
     date: "2024-01-05",
     size: "3.2 MB",
@@ -51,14 +51,14 @@ export default function Documents() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Gestion des Documents</h1>
+          <h1 className="text-3xl font-bold text-foreground">Document Management</h1>
           <p className="text-muted-foreground mt-1">
-            Centralisation et organisation de tous les documents CFT
+            Centralization and organization of all CFT documents
           </p>
         </div>
         <Button>
           <Upload className="mr-2 h-4 w-4" />
-          Télécharger un document
+          Upload Document
         </Button>
       </div>
 
@@ -69,7 +69,7 @@ export default function Documents() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Rechercher dans les documents..."
+                placeholder="Search documents..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -77,7 +77,7 @@ export default function Documents() {
             </div>
             <Button variant="outline">
               <Filter className="mr-2 h-4 w-4" />
-              Filtres
+              Filters
             </Button>
           </div>
         </CardContent>
@@ -88,22 +88,22 @@ export default function Documents() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <FileText className="mr-2 h-5 w-5" />
-            Documents disponibles
+            Available Documents
           </CardTitle>
           <CardDescription>
-            Liste complète des documents du CFT avec recherche et filtrage
+            Complete list of CFT documents with search and filtering
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nom du document</TableHead>
+                <TableHead>Document Name</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Date</TableHead>
-                <TableHead>Taille</TableHead>
-                <TableHead>Réunion</TableHead>
-                <TableHead>Statut</TableHead>
+                <TableHead>Size</TableHead>
+                <TableHead>Meeting</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -113,8 +113,8 @@ export default function Documents() {
                   <TableCell className="font-medium">{doc.name}</TableCell>
                   <TableCell>
                     <Badge variant="outline">
-                      {doc.type === "agenda" ? "Ordre du jour" :
-                       doc.type === "protocol" ? "Protocole" : "RAFP"}
+                      {doc.type === "agenda" ? "Agenda" :
+                       doc.type === "protocol" ? "Protocol" : "RAFP"}
                     </Badge>
                   </TableCell>
                   <TableCell>{doc.date}</TableCell>
@@ -133,8 +133,8 @@ export default function Documents() {
                         doc.status === "approved" ? "default" : "secondary"
                       }
                     >
-                      {doc.status === "active" ? "Actif" :
-                       doc.status === "approved" ? "Approuvé" : "En attente"}
+                       {doc.status === "active" ? "Active" :
+                        doc.status === "approved" ? "Approved" : "Pending"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -157,19 +157,19 @@ export default function Documents() {
       {/* Document Upload Area */}
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle>Zone de téléchargement</CardTitle>
+          <CardTitle>Upload Area</CardTitle>
           <CardDescription>
-            Glissez-déposez vos documents ici ou cliquez pour sélectionner
+            Drag and drop your documents here or click to select
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="border-2 border-dashed border-border rounded-lg p-8 text-center bg-gradient-card">
             <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
             <p className="text-muted-foreground mb-4">
-              Glissez-déposez vos fichiers PDF ici
+              Drag and drop your PDF files here
             </p>
             <Button>
-              Sélectionner des fichiers
+              Select Files
             </Button>
           </div>
         </CardContent>

@@ -11,9 +11,9 @@ export default function Settings() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Paramètres</h1>
+        <h1 className="text-3xl font-bold text-foreground">Settings</h1>
         <p className="text-muted-foreground mt-1">
-          Configuration du système et gestion des préférences
+          System configuration and preference management
         </p>
       </div>
 
@@ -22,20 +22,20 @@ export default function Settings() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <User className="mr-2 h-5 w-5" />
-            Profil utilisateur
+            User Profile
           </CardTitle>
           <CardDescription>
-            Informations personnelles et préférences de compte
+            Personal information and account preferences
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="firstName">Prénom</Label>
+              <Label htmlFor="firstName">First Name</Label>
               <Input id="firstName" defaultValue="Dr. Rodriguez" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Nom</Label>
+              <Label htmlFor="lastName">Last Name</Label>
               <Input id="lastName" defaultValue="Maria" />
             </div>
             <div className="space-y-2">
@@ -43,11 +43,11 @@ export default function Settings() {
               <Input id="email" type="email" defaultValue="dr.rodriguez@hospital.com" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="role">Rôle</Label>
-              <Input id="role" defaultValue="Administrateur CFT" disabled />
+              <Label htmlFor="role">Role</Label>
+              <Input id="role" defaultValue="CFT Administrator" disabled />
             </div>
           </div>
-          <Button>Sauvegarder les modifications</Button>
+          <Button>Save Changes</Button>
         </CardContent>
       </Card>
 
@@ -56,18 +56,18 @@ export default function Settings() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <SettingsIcon className="mr-2 h-5 w-5" />
-            Paramètres système
+            System Settings
           </CardTitle>
           <CardDescription>
-            Configuration générale de l'application
+            General application configuration
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Notifications par email</Label>
+              <Label>Email Notifications</Label>
               <p className="text-sm text-muted-foreground">
-                Recevoir des notifications pour les nouvelles propositions
+                Receive notifications for new proposals
               </p>
             </div>
             <Switch defaultChecked />
@@ -77,9 +77,9 @@ export default function Settings() {
           
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Mode sombre automatique</Label>
+              <Label>Automatic Dark Mode</Label>
               <p className="text-sm text-muted-foreground">
-                Basculer automatiquement selon l'heure du système
+                Switch automatically based on system time
               </p>
             </div>
             <Switch />
@@ -89,9 +89,9 @@ export default function Settings() {
           
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Sauvegarde automatique</Label>
+              <Label>Automatic Backup</Label>
               <p className="text-sm text-muted-foreground">
-                Synchronisation automatique avec le cloud
+                Automatic cloud synchronization
               </p>
             </div>
             <Switch defaultChecked />
@@ -104,33 +104,33 @@ export default function Settings() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Shield className="mr-2 h-5 w-5" />
-            Sécurité et accès
+            Security and Access
           </CardTitle>
           <CardDescription>
-            Gestion des permissions et sécurité
+            Permission management and security
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Connexion Azure AD</Label>
+            <Label>Azure AD Connection</Label>
             <div className="flex items-center space-x-2">
-              <Input defaultValue="Connecté - hospital.onmicrosoft.com" disabled />
-              <Button variant="outline">Reconfigurer</Button>
+              <Input defaultValue="Connected - hospital.onmicrosoft.com" disabled />
+              <Button variant="outline">Reconfigure</Button>
             </div>
           </div>
           
           <div className="space-y-2">
-            <Label>Niveau d'accès</Label>
-            <Input defaultValue="Administrateur - Accès complet" disabled />
+            <Label>Access Level</Label>
+            <Input defaultValue="Administrator - Full Access" disabled />
           </div>
           
           <div className="space-y-2">
-            <Label>Journal d'audit</Label>
+            <Label>Audit Log</Label>
             <p className="text-sm text-muted-foreground">
-              Toutes les actions sont enregistrées pour audit
+              All actions are recorded for audit
             </p>
             <Button variant="outline" size="sm">
-              Voir le journal
+              View Log
             </Button>
           </div>
         </CardContent>
@@ -141,33 +141,33 @@ export default function Settings() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Database className="mr-2 h-5 w-5" />
-            Gestion des données
+            Data Management
           </CardTitle>
           <CardDescription>
-            Import/export et sauvegarde des données
+            Data import/export and backup
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Export des données</Label>
+              <Label>Data Export</Label>
               <p className="text-sm text-muted-foreground">
-                Exporter toutes les données en format JSON
+                Export all data in JSON format
               </p>
               <Button variant="outline" className="w-full">
                 <Download className="mr-2 h-4 w-4" />
-                Exporter les données
+                Export Data
               </Button>
             </div>
             
             <div className="space-y-2">
-              <Label>Import des données</Label>
+              <Label>Data Import</Label>
               <p className="text-sm text-muted-foreground">
-                Importer des données depuis un fichier JSON
+                Import data from JSON file
               </p>
               <Button variant="outline" className="w-full">
                 <Upload className="mr-2 h-4 w-4" />
-                Importer des données
+                Import Data
               </Button>
             </div>
           </div>
@@ -175,15 +175,15 @@ export default function Settings() {
           <Separator />
           
           <div className="space-y-2">
-            <Label>Stockage local</Label>
+            <Label>Local Storage</Label>
             <p className="text-sm text-muted-foreground">
-              Fonctionnement hors-ligne avec IndexedDB
+              Offline functionality with IndexedDB
             </p>
             <div className="flex items-center space-x-2">
               <div className="flex-1 bg-muted rounded-full h-2">
                 <div className="bg-primary h-2 rounded-full" style={{ width: "65%" }}></div>
               </div>
-              <span className="text-sm text-muted-foreground">65% utilisé</span>
+              <span className="text-sm text-muted-foreground">65% used</span>
             </div>
           </div>
         </CardContent>

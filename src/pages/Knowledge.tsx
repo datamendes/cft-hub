@@ -16,51 +16,51 @@ import {
 const knowledgeItems = [
   {
     id: 1,
-    title: "Guide des bonnes pratiques pharmaceutiques",
+    title: "Pharmaceutical Good Practices Guide",
     type: "guide",
-    category: "Bonnes pratiques",
+    category: "Best Practices",
     date: "2023-12-15",
     size: "4.2 MB",
     downloads: 156,
-    tags: ["pharmacie", "protocole", "qualité"]
+    tags: ["pharmacy", "protocol", "quality"]
   },
   {
     id: 2,
-    title: "Référentiel antibiotiques 2024",
+    title: "Antibiotic Reference Guide 2024",
     type: "reference",
-    category: "Médicaments",
+    category: "Medications",
     date: "2024-01-01",
     size: "2.8 MB",
     downloads: 89,
-    tags: ["antibiotiques", "posologie", "indications"]
+    tags: ["antibiotics", "dosage", "indications"]
   },
   {
     id: 3,
-    title: "Procédure d'évaluation des RAFP",
+    title: "RAFP Evaluation Procedure",
     type: "procedure",
-    category: "Processus",
+    category: "Processes",
     date: "2023-11-20",
     size: "1.5 MB",
     downloads: 234,
-    tags: ["rafp", "évaluation", "procédure"]
+    tags: ["rafp", "evaluation", "procedure"]
   },
   {
     id: 4,
-    title: "Base de données interactions médicamenteuses",
+    title: "Drug Interactions Database",
     type: "database",
-    category: "Référence",
+    category: "Reference",
     date: "2024-01-05",
     size: "8.7 MB",
     downloads: 67,
-    tags: ["interactions", "sécurité", "base de données"]
+    tags: ["interactions", "safety", "database"]
   }
 ]
 
 const categories = [
-  { name: "Bonnes pratiques", count: 12, color: "primary" },
-  { name: "Médicaments", count: 25, color: "accent" },
-  { name: "Processus", count: 8, color: "success" },
-  { name: "Référence", count: 15, color: "warning" }
+  { name: "Best Practices", count: 12, color: "primary" },
+  { name: "Medications", count: 25, color: "accent" },
+  { name: "Processes", count: 8, color: "success" },
+  { name: "Reference", count: 15, color: "warning" }
 ]
 
 export default function Knowledge() {
@@ -81,14 +81,14 @@ export default function Knowledge() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Base de Connaissances</h1>
+          <h1 className="text-3xl font-bold text-foreground">Knowledge Base</h1>
           <p className="text-muted-foreground mt-1">
-            Repository central des documents de référence et guides du CFT
+            Central repository of CFT reference documents and guides
           </p>
         </div>
         <Button>
           <Upload className="mr-2 h-4 w-4" />
-          Ajouter un document
+          Add Document
         </Button>
       </div>
 
@@ -98,7 +98,7 @@ export default function Knowledge() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Rechercher dans la base de connaissances..."
+              placeholder="Search knowledge base..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 text-lg h-12"
@@ -112,10 +112,10 @@ export default function Knowledge() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Tag className="mr-2 h-5 w-5" />
-            Catégories
+            Categories
           </CardTitle>
           <CardDescription>
-            Navigation par domaine d'expertise
+            Navigation by area of expertise
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -138,10 +138,10 @@ export default function Knowledge() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <BookOpen className="mr-2 h-5 w-5" />
-            Documents disponibles
+            Available Documents
           </CardTitle>
           <CardDescription>
-            Collection complète des ressources de connaissances
+            Complete collection of knowledge resources
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -150,10 +150,10 @@ export default function Knowledge() {
               <TableRow>
                 <TableHead>Document</TableHead>
                 <TableHead>Type</TableHead>
-                <TableHead>Catégorie</TableHead>
+                <TableHead>Category</TableHead>
                 <TableHead>Date</TableHead>
-                <TableHead>Taille</TableHead>
-                <TableHead>Téléchargements</TableHead>
+                <TableHead>Size</TableHead>
+                <TableHead>Downloads</TableHead>
                 <TableHead>Tags</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -172,8 +172,8 @@ export default function Knowledge() {
                   <TableCell>
                     <Badge variant="outline">
                       {item.type === "guide" ? "Guide" :
-                       item.type === "reference" ? "Référence" :
-                       item.type === "procedure" ? "Procédure" : "Base de données"}
+                       item.type === "reference" ? "Reference" :
+                       item.type === "procedure" ? "Procedure" : "Database"}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -216,9 +216,9 @@ export default function Knowledge() {
       {/* Featured Resources */}
       <Card className="shadow-card border-accent/20 bg-gradient-accent/5">
         <CardHeader>
-          <CardTitle className="text-accent">Ressources recommandées</CardTitle>
+          <CardTitle className="text-accent">Recommended Resources</CardTitle>
           <CardDescription>
-            Documents les plus consultés et références essentielles
+            Most consulted documents and essential references
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -228,9 +228,9 @@ export default function Knowledge() {
                 <div className="flex items-start space-x-3">
                   <span className="text-2xl">📖</span>
                   <div>
-                    <h4 className="font-semibold text-sm">Guide d'évaluation</h4>
-                    <p className="text-xs text-muted-foreground">Méthodologie d'évaluation des propositions</p>
-                    <Badge variant="outline" className="mt-2 text-xs">156 vues</Badge>
+                    <h4 className="font-semibold text-sm">Evaluation Guide</h4>
+                    <p className="text-xs text-muted-foreground">Proposal evaluation methodology</p>
+                    <Badge variant="outline" className="mt-2 text-xs">156 views</Badge>
                   </div>
                 </div>
               </CardContent>
@@ -241,9 +241,9 @@ export default function Knowledge() {
                 <div className="flex items-start space-x-3">
                   <span className="text-2xl">📚</span>
                   <div>
-                    <h4 className="font-semibold text-sm">Référentiel médicaments</h4>
-                    <p className="text-xs text-muted-foreground">Liste complète des médicaments autorisés</p>
-                    <Badge variant="outline" className="mt-2 text-xs">234 vues</Badge>
+                    <h4 className="font-semibold text-sm">Drug Reference</h4>
+                    <p className="text-xs text-muted-foreground">Complete list of approved medications</p>
+                    <Badge variant="outline" className="mt-2 text-xs">234 views</Badge>
                   </div>
                 </div>
               </CardContent>
@@ -254,9 +254,9 @@ export default function Knowledge() {
                 <div className="flex items-start space-x-3">
                   <span className="text-2xl">📋</span>
                   <div>
-                    <h4 className="font-semibold text-sm">Procédures CFT</h4>
-                    <p className="text-xs text-muted-foreground">Guide des procédures internes</p>
-                    <Badge variant="outline" className="mt-2 text-xs">189 vues</Badge>
+                    <h4 className="font-semibold text-sm">CFT Procedures</h4>
+                    <p className="text-xs text-muted-foreground">Internal procedures guide</p>
+                    <Badge variant="outline" className="mt-2 text-xs">189 views</Badge>
                   </div>
                 </div>
               </CardContent>

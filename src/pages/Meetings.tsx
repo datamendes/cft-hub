@@ -13,7 +13,7 @@ const upcomingMeetings = [
     attendees: 12,
     proposals: 8,
     status: "scheduled",
-    location: "Salle de conférence A"
+    location: "Conference Room A"
   },
   {
     id: 2,
@@ -24,14 +24,14 @@ const upcomingMeetings = [
     attendees: 8,
     proposals: 3,
     status: "urgent",
-    location: "Salle de réunion B"
+    location: "Meeting Room B"
   }
 ]
 
 const recentMeetings = [
   {
     id: 3,
-    title: "CFT Décembre 2023",
+    title: "CFT December 2023",
     date: "2023-12-20",
     time: "14:00",
     attendees: 15,
@@ -43,7 +43,7 @@ const recentMeetings = [
   },
   {
     id: 4,
-    title: "Révision Urgente Novembre",
+    title: "November Urgent Review",
     date: "2023-11-28",
     time: "16:00",
     attendees: 10,
@@ -61,19 +61,19 @@ export default function Meetings() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Gestion des Réunions</h1>
+          <h1 className="text-3xl font-bold text-foreground">Meeting Management</h1>
           <p className="text-muted-foreground mt-1">
-            Planification et suivi des réunions du CFT
+            Planning and tracking of CFT meetings
           </p>
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline">
             <PlayCircle className="mr-2 h-4 w-4" />
-            Mode Réunion
+            Meeting Mode
           </Button>
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Nouvelle réunion
+            New Meeting
           </Button>
         </div>
       </div>
@@ -83,10 +83,10 @@ export default function Meetings() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Calendar className="mr-2 h-5 w-5" />
-            Prochaines réunions
+            Upcoming Meetings
           </CardTitle>
           <CardDescription>
-            Réunions programmées avec statut et informations détaillées
+            Scheduled meetings with status and detailed information
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -102,7 +102,7 @@ export default function Meetings() {
                     <Badge 
                       variant={meeting.status === "urgent" ? "destructive" : "default"}
                     >
-                      {meeting.status === "urgent" ? "Urgent" : "Programmé"}
+                      {meeting.status === "urgent" ? "Urgent" : "Scheduled"}
                     </Badge>
                   </div>
                   
@@ -113,7 +113,7 @@ export default function Meetings() {
                     </div>
                     <div className="flex items-center text-sm">
                       <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <span>Durée estimée: {meeting.duration}</span>
+                      <span>Estimated duration: {meeting.duration}</span>
                     </div>
                     <div className="flex items-center text-sm">
                       <Users className="mr-2 h-4 w-4 text-muted-foreground" />
@@ -123,11 +123,11 @@ export default function Meetings() {
 
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">
-                      {meeting.proposals} propositions à examiner
+                      {meeting.proposals} proposals to review
                     </span>
                     <div className="flex space-x-2">
-                      <Button variant="outline" size="sm">Modifier</Button>
-                      <Button size="sm">Démarrer</Button>
+                      <Button variant="outline" size="sm">Edit</Button>
+                      <Button size="sm">Start</Button>
                     </div>
                   </div>
                 </CardContent>
@@ -142,10 +142,10 @@ export default function Meetings() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Clock className="mr-2 h-5 w-5" />
-            Réunions récentes
+            Recent Meetings
           </CardTitle>
           <CardDescription>
-            Historique des réunions avec résultats et statistiques
+            Meeting history with results and statistics
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -160,21 +160,21 @@ export default function Meetings() {
                         {meeting.date} à {meeting.time} • {meeting.attendees} participants
                       </p>
                     </div>
-                    <Badge variant="outline">Terminé</Badge>
+                    <Badge variant="outline">Completed</Badge>
                   </div>
 
                   <div className="grid grid-cols-4 gap-4 text-center">
                     <div className="space-y-1">
                       <p className="text-2xl font-bold text-success">{meeting.approved}</p>
-                      <p className="text-xs text-muted-foreground">Approuvées</p>
+                      <p className="text-xs text-muted-foreground">Approved</p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-2xl font-bold text-destructive">{meeting.rejected}</p>
-                      <p className="text-xs text-muted-foreground">Rejetées</p>
+                      <p className="text-xs text-muted-foreground">Rejected</p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-2xl font-bold text-warning">{meeting.postponed}</p>
-                      <p className="text-xs text-muted-foreground">Reportées</p>
+                      <p className="text-xs text-muted-foreground">Postponed</p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-2xl font-bold text-primary">{meeting.proposals}</p>
@@ -184,7 +184,7 @@ export default function Meetings() {
 
                   <div className="flex justify-end mt-4">
                     <Button variant="outline" size="sm">
-                      Voir le compte-rendu
+                      View Minutes
                     </Button>
                   </div>
                 </CardContent>
@@ -199,22 +199,22 @@ export default function Meetings() {
         <CardHeader>
           <CardTitle className="flex items-center text-primary">
             <PlayCircle className="mr-2 h-5 w-5" />
-            Mode Réunion
+            Meeting Mode
           </CardTitle>
           <CardDescription>
-            Interface dédiée pour le déroulement des réunions en temps réel
+            Dedicated interface for real-time meeting management
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-6">
             <PlayCircle className="mx-auto h-16 w-16 text-primary mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Démarrer une session de réunion</h3>
+            <h3 className="text-lg font-semibold mb-2">Start a Meeting Session</h3>
             <p className="text-muted-foreground mb-6">
-              Interface plein écran pour présenter les propositions et enregistrer les décisions
+              Full-screen interface to present proposals and record decisions
             </p>
             <Button size="lg" className="bg-primary">
               <PlayCircle className="mr-2 h-5 w-5" />
-              Entrer en mode réunion
+              Enter Meeting Mode
             </Button>
           </div>
         </CardContent>
