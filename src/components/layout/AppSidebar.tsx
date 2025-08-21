@@ -8,13 +8,16 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  Plus
+  Plus,
+  Upload
 } from "lucide-react"
-import { NavLink, useLocation } from "react-router-dom"
+import { NavLink, useLocation, useNavigate } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
+import { useLoading } from "@/hooks/use-loading"
+import { handleSuccess } from "@/lib/error-handling"
 
 const navigationItems = [
   { 
@@ -51,7 +54,7 @@ const navigationItems = [
 
 const quickActions = [
   { title: "New Proposal", icon: Plus, action: "proposal" },
-  { title: "Upload Document", icon: Plus, action: "document" },
+  { title: "Upload Document", icon: Upload, action: "document" },
 ]
 
 interface AppSidebarProps {
@@ -61,12 +64,31 @@ interface AppSidebarProps {
 
 export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
   const location = useLocation()
+  const navigate = useNavigate()
   const currentPath = location.pathname
+  const { isLoading, withLoading } = useLoading()
 
   const isActive = (path: string) => {
     if (path === "/") return currentPath === "/"
     return currentPath.startsWith(path)
   }
+
+  const handleQuickAction = async (actionType: string) => {
+    await withLoading(async () => {
+      switch (actionType) {
+        case 'proposal':
+          navigate('/proposals');
+          handleSuccess('Navigated to proposals');
+          break;
+        case 'document':
+          navigate('/documents');
+          handleSuccess('Navigated to documents');
+          break;
+        default:
+          console.warn('Unknown action:', actionType);
+      }
+    });
+  };
 
   return (
     <div 
@@ -147,7 +169,10 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
                     key={action.action}
                     variant="ghost"
                     size="sm"
+                    onClick={() => handleQuickAction(action.action)}
+                    disabled={isLoading}
                     className="w-full justify-start text-sm font-medium"
+                    aria-label={`Quick action: ${action.title}`}
                   >
                     <action.icon className="mr-3 h-4 w-4" />
                     {action.title}

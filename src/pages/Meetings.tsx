@@ -1,7 +1,11 @@
-import { Calendar, Users, Clock, Plus, PlayCircle } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Calendar, Users, Clock, Plus, PlayCircle, Edit, ExternalLink } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { useLoading, useAsyncOperation } from "@/hooks/use-loading"
+import { meetingService, type Meeting } from "@/services/meeting-service"
+import { withErrorHandling, handleSuccess, handleError } from "@/lib/error-handling"
 
 const upcomingMeetings = [
   {
@@ -56,6 +60,68 @@ const recentMeetings = [
 ]
 
 export default function Meetings() {
+  const [meetings, setMeetings] = useState<Meeting[]>([])
+
+  const { isLoading: isLoadingMeetings, execute: loadMeetings } = useAsyncOperation<Meeting[]>()
+  const { isLoading: isCreating, withLoading: withCreating } = useLoading()
+  const { isLoading: isJoining, withLoading: withJoining } = useLoading()
+  const { isLoading: isUpdating, withLoading: withUpdating } = useLoading()
+
+  // Load meetings on component mount
+  useEffect(() => {
+    loadMeetings(() => meetingService.getMeetings(), {
+      onSuccess: (data) => setMeetings(data),
+      onError: (error) => handleError(error, "Failed to load meetings")
+    });
+  }, [loadMeetings])
+
+  const handleCreateMeeting = async () => {
+    await withCreating(async () => {
+      const newMeeting = {
+        title: "New CFT Meeting",
+        date: new Date().toISOString().split('T')[0],
+        time: "14:00",
+        type: "regular" as const,
+        status: "scheduled" as const,
+        attendees: 0,
+        proposalsCount: 0,
+        location: "Conference Room A"
+      };
+      
+      const result = await withErrorHandling(
+        () => meetingService.createMeeting(newMeeting),
+        "Meeting created successfully"
+      );
+      if (result) {
+        setMeetings(prev => [result, ...prev]);
+      }
+    });
+  };
+
+  const handleJoinMeeting = async (id: string, title: string) => {
+    await withJoining(async () => {
+      const meetingUrl = await withErrorHandling(
+        () => meetingService.joinMeeting(id),
+        `Joining meeting: ${title}`
+      );
+      if (meetingUrl) {
+        window.open(meetingUrl, '_blank');
+      }
+    });
+  };
+
+  const handleEditMeeting = async (id: string) => {
+    handleSuccess("Edit meeting functionality coming soon");
+  };
+
+  const handleMeetingMode = () => {
+    handleSuccess("Meeting mode will provide a full-screen interface for conducting meetings");
+  };
+
+  const handleViewMinutes = (title: string) => {
+    handleSuccess(`Viewing minutes for ${title} - functionality coming soon`);
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -67,13 +133,30 @@ export default function Meetings() {
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline">
+          <Button 
+            variant="outline"
+            onClick={handleMeetingMode}
+            aria-label="Enter meeting mode"
+          >
             <PlayCircle className="mr-2 h-4 w-4" />
             Meeting Mode
           </Button>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            New Meeting
+          <Button 
+            onClick={handleCreateMeeting}
+            disabled={isCreating}
+            aria-label="Create new meeting"
+          >
+            {isCreating ? (
+              <>
+                <Plus className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              <>
+                <Plus className="mr-2 h-4 w-4" />
+                New Meeting
+              </>
+            )}
           </Button>
         </div>
       </div>
@@ -91,7 +174,7 @@ export default function Meetings() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
-            {upcomingMeetings.map((meeting) => (
+            {(meetings.length > 0 ? meetings.filter(m => m.status === 'scheduled') : upcomingMeetings).map((meeting) => (
               <Card key={meeting.id} className="border border-border bg-gradient-card">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
@@ -126,8 +209,31 @@ export default function Meetings() {
                       {meeting.proposals} proposals to review
                     </span>
                     <div className="flex space-x-2">
-                      <Button variant="outline" size="sm">Edit</Button>
-                      <Button size="sm">Start</Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleEditMeeting(meeting.id)}
+                        disabled={isUpdating}
+                        aria-label={`Edit ${meeting.title}`}
+                      >
+                        <Edit className="mr-1 h-3 w-3" />
+                        Edit
+                      </Button>
+                      <Button 
+                        size="sm"
+                        onClick={() => handleJoinMeeting(meeting.id, meeting.title)}
+                        disabled={isJoining}
+                        aria-label={`Join ${meeting.title}`}
+                      >
+                        {isJoining ? (
+                          "Joining..."
+                        ) : (
+                          <>
+                            <ExternalLink className="mr-1 h-3 w-3" />
+                            Start
+                          </>
+                        )}
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -183,7 +289,12 @@ export default function Meetings() {
                   </div>
 
                   <div className="flex justify-end mt-4">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleViewMinutes(meeting.title)}
+                      aria-label={`View minutes for ${meeting.title}`}
+                    >
                       View Minutes
                     </Button>
                   </div>
@@ -212,7 +323,12 @@ export default function Meetings() {
             <p className="text-muted-foreground mb-6">
               Full-screen interface to present proposals and record decisions
             </p>
-            <Button size="lg" className="bg-primary">
+            <Button 
+              size="lg" 
+              className="bg-primary"
+              onClick={handleMeetingMode}
+              aria-label="Enter meeting mode for full-screen presentation"
+            >
               <PlayCircle className="mr-2 h-5 w-5" />
               Enter Meeting Mode
             </Button>

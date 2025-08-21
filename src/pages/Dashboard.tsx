@@ -1,8 +1,12 @@
-import { FileText, Users, Calendar, CheckCircle, Clock, AlertTriangle, TrendingUp } from "lucide-react"
+import { FileText, Users, Calendar, CheckCircle, Clock, AlertTriangle, TrendingUp, Plus } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { KPICard } from "@/components/dashboard/KPICard"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { useNavigate } from "react-router-dom"
+import { useLoading } from "@/hooks/use-loading"
+import { proposalService } from "@/services/proposal-service"
+import { withErrorHandling, handleSuccess } from "@/lib/error-handling"
 import {
   ChartContainer,
   ChartTooltip,
@@ -105,6 +109,17 @@ const recentProposals = [
 ]
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+  const { isLoading: isCreatingProposal, withLoading } = useLoading();
+
+  const handleNewProposal = async () => {
+    await withLoading(async () => {
+      // For now, navigate to proposals page - in a real app, this would open a form
+      navigate('/proposals');
+      handleSuccess('Redirected to proposals page');
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -116,9 +131,22 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button>
-            <FileText className="mr-2 h-4 w-4" />
-            New Proposal
+          <Button 
+            onClick={handleNewProposal}
+            disabled={isCreatingProposal}
+            aria-label="Create new proposal"
+          >
+            {isCreatingProposal ? (
+              <>
+                <Clock className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              <>
+                <Plus className="mr-2 h-4 w-4" />
+                New Proposal
+              </>
+            )}
           </Button>
         </div>
       </div>
