@@ -1,13 +1,18 @@
 import { useState, useEffect, useRef } from "react"
-import { FileText, Upload, Search, Filter, Download, Eye, Trash2 } from "lucide-react"
+import { FileText, Upload, Download, Eye, Trash2, History, CheckSquare, Square, Archive } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import { useLoading, useAsyncOperation } from "@/hooks/use-loading"
 import { documentService, type Document } from "@/services/document-service"
 import { withErrorHandling, handleSuccess, handleError } from "@/lib/error-handling"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { DocumentPreviewDialog } from "@/components/documents/DocumentPreviewDialog"
+import { DocumentVersionDialog } from "@/components/documents/DocumentVersionDialog"
+import { DocumentFilters, type DocumentFilters as DocumentFiltersType } from "@/components/documents/DocumentFilters"
+import { DocumentTableSkeleton } from "@/components/documents/DocumentTableSkeleton"
+import { useKeyboardShortcuts, createCommonShortcuts } from "@/hooks/use-keyboard-shortcuts"
 import {
   Table,
   TableBody,
@@ -17,39 +22,20 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-const sampleDocuments = [
-  {
-    id: 1,
-    name: "CFT Agenda - January 2024.pdf",
-    type: "agenda",
-    date: "2024-01-10",
-    size: "2.4 MB",
-    meeting: "CFT-2024-01",
-    status: "active"
-  },
-  {
-    id: 2,
-    name: "Antibiotic Protocol v2.1.pdf",
-    type: "protocol",
-    date: "2024-01-08",
-    size: "1.8 MB",
-    meeting: null,
-    status: "approved"
-  },
-  {
-    id: 3,
-    name: "RAFP Immunotherapy.pdf",
-    type: "rafp",
-    date: "2024-01-05",
-    size: "3.2 MB",
-    meeting: "CFT-2024-01",
-    status: "pending"
-  }
-]
-
 export default function Documents() {
-  const [searchTerm, setSearchTerm] = useState("")
   const [documents, setDocuments] = useState<Document[]>([])
+  const [selectedDocuments, setSelectedDocuments] = useState<Set<string>>(new Set())
+  const [previewDocument, setPreviewDocument] = useState<Document | null>(null)
+  const [versionDocument, setVersionDocument] = useState<Document | null>(null)
+  const [filters, setFilters] = useState<DocumentFiltersType>({
+    search: '',
+    category: '',
+    type: '',
+    dateFrom: '',
+    dateTo: '',
+    uploadedBy: '',
+    status: ''
+  })
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     title: string;
@@ -65,16 +51,97 @@ export default function Documents() {
 
   const { isLoading: isLoadingDocs, execute: loadDocuments } = useAsyncOperation<Document[]>()
   const { isLoading: isUploading, withLoading: withUploading } = useLoading()
+  const { isLoading: isBulkOperating, withLoading: withBulkOperating } = useLoading()
   const { isLoading: isDownloading, withLoading: withDownloading } = useLoading()
   const { isLoading: isDeleting, withLoading: withDeleting } = useLoading()
 
-  // Load documents on component mount
+  // Load documents on component mount and when filters change
   useEffect(() => {
-    loadDocuments(() => documentService.getDocuments(), {
+    const hasActiveFilters = Object.values(filters).some(value => value && value.trim() !== '');
+    const filtersToUse = hasActiveFilters ? filters : undefined;
+    
+    loadDocuments(() => documentService.getDocuments(filtersToUse), {
       onSuccess: (data) => setDocuments(data),
       onError: (error) => handleError(error, "Failed to load documents")
     });
-  }, [loadDocuments])
+  }, [loadDocuments, filters])
+
+  const handleBulkDelete = () => {
+    const selectedIds = Array.from(selectedDocuments);
+    const selectedNames = documents.filter(d => selectedIds.includes(d.id)).map(d => d.name);
+    
+    setConfirmDialog({
+      open: true,
+      title: "Delete Multiple Documents",
+      description: `Are you sure you want to delete ${selectedIds.length} documents? This action cannot be undone.\n\nDocuments: ${selectedNames.slice(0, 3).join(', ')}${selectedNames.length > 3 ? '...' : ''}`,
+      onConfirm: async () => {
+        await withBulkOperating(async () => {
+          const success = await withErrorHandling(
+            () => documentService.bulkDelete(selectedIds),
+            `${selectedIds.length} documents deleted successfully`
+          );
+          if (success !== undefined) {
+            setDocuments(prev => prev.filter(d => !selectedIds.includes(d.id)));
+            setSelectedDocuments(new Set());
+          }
+        });
+        setConfirmDialog(prev => ({ ...prev, open: false }));
+      }
+    });
+  };
+
+  const handleBulkDownload = async () => {
+    const selectedIds = Array.from(selectedDocuments);
+    
+    await withBulkOperating(async () => {
+      const blob = await withErrorHandling(
+        () => documentService.bulkDownload(selectedIds),
+        `${selectedIds.length} documents downloaded successfully`
+      );
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const a = window.document.createElement('a');
+        a.href = url;
+        a.download = `documents-${new Date().toISOString().split('T')[0]}.zip`;
+        window.document.body.appendChild(a);
+        a.click();
+        window.document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    });
+  };
+
+  // Keyboard shortcuts
+  const shortcuts = createCommonShortcuts({
+    onNew: () => fileInputRef.current?.click(),
+    onRefresh: () => {
+      const hasActiveFilters = Object.values(filters).some(value => value && value.trim() !== '');
+      const filtersToUse = hasActiveFilters ? filters : undefined;
+      loadDocuments(() => documentService.getDocuments(filtersToUse), {
+        onSuccess: (data) => setDocuments(data),
+        onError: (error) => handleError(error, "Failed to refresh documents")
+      });
+    },
+    onSelectAll: () => {
+      if (selectedDocuments.size === documents.length) {
+        setSelectedDocuments(new Set());
+      } else {
+        setSelectedDocuments(new Set(documents.map(d => d.id)));
+      }
+    },
+    onDelete: () => {
+      if (selectedDocuments.size > 0) {
+        handleBulkDelete();
+      }
+    },
+    onEscape: () => {
+      setSelectedDocuments(new Set());
+      setPreviewDocument(null);
+      setVersionDocument(null);
+    }
+  });
+
+  useKeyboardShortcuts(shortcuts);
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
@@ -108,12 +175,12 @@ export default function Documents() {
       );
       if (blob) {
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = window.document.createElement('a');
         a.href = url;
         a.download = name;
-        document.body.appendChild(a);
+        window.document.body.appendChild(a);
         a.click();
-        document.body.removeChild(a);
+        window.document.body.removeChild(a);
         URL.revokeObjectURL(url);
       }
     });
@@ -139,6 +206,28 @@ export default function Documents() {
     });
   };
 
+  const handleDocumentSelect = (documentId: string, checked: boolean) => {
+    const newSelected = new Set(selectedDocuments);
+    if (checked) {
+      newSelected.add(documentId);
+    } else {
+      newSelected.delete(documentId);
+    }
+    setSelectedDocuments(newSelected);
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      search: '',
+      category: '',
+      type: '',
+      dateFrom: '',
+      dateTo: '',
+      uploadedBy: '',
+      status: ''
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -146,169 +235,269 @@ export default function Documents() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Document Management</h1>
           <p className="text-muted-foreground mt-1">
-            Centralization and organization of all CFT documents
+            Advanced document management with versioning, bulk operations, and search
           </p>
         </div>
-        <Button 
-          onClick={handleUploadClick}
-          disabled={isUploading}
-          aria-label="Upload new document"
-        >
-          {isUploading ? (
+        <div className="flex gap-2">
+          {selectedDocuments.size > 0 && (
             <>
-              <Upload className="mr-2 h-4 w-4 animate-pulse" />
-              Uploading...
-            </>
-          ) : (
-            <>
-              <Upload className="mr-2 h-4 w-4" />
-              Upload Document
+              <Button 
+                variant="outline"
+                onClick={handleBulkDownload}
+                disabled={isBulkOperating}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download ({selectedDocuments.size})
+              </Button>
+              <Button 
+                variant="destructive"
+                onClick={handleBulkDelete}
+                disabled={isBulkOperating}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete ({selectedDocuments.size})
+              </Button>
             </>
           )}
-        </Button>
+          <Button 
+            onClick={handleUploadClick}
+            disabled={isUploading}
+            aria-label="Upload new document"
+          >
+            {isUploading ? (
+              <>
+                <Upload className="mr-2 h-4 w-4 animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              <>
+                <Upload className="mr-2 h-4 w-4" />
+                Upload Document
+              </>
+            )}
+          </Button>
+        </div>
         <input
           ref={fileInputRef}
           type="file"
           onChange={handleFileUpload}
-          accept=".pdf,.doc,.docx,.txt"
+          accept=".pdf,.doc,.docx,.txt,.xls,.xlsx"
           className="hidden"
           aria-label="Select document file"
         />
       </div>
 
-      {/* Search and Filters */}
-      <Card className="shadow-card">
-        <CardContent className="pt-6">
-          <div className="flex items-center space-x-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search documents..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Button 
-              variant="outline"
-              onClick={() => handleSuccess("Filter functionality coming soon")}
-              aria-label="Open filter options"
-            >
-              <Filter className="mr-2 h-4 w-4" />
-              Filters
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Advanced Filters */}
+      <DocumentFilters
+        filters={filters}
+        onFiltersChange={setFilters}
+        onClearFilters={clearFilters}
+      />
 
       {/* Documents Table */}
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <FileText className="mr-2 h-5 w-5" />
-            Available Documents
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center">
+              <FileText className="mr-2 h-5 w-5" />
+              Available Documents
+              {selectedDocuments.size > 0 && (
+                <Badge variant="secondary" className="ml-2">
+                  {selectedDocuments.size} selected
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  if (selectedDocuments.size === documents.length) {
+                    setSelectedDocuments(new Set());
+                  } else {
+                    setSelectedDocuments(new Set(documents.map(d => d.id)));
+                  }
+                }}
+                disabled={documents.length === 0}
+              >
+                {selectedDocuments.size === documents.length ? (
+                  <>
+                    <Square className="mr-1 h-3 w-3" />
+                    Deselect All
+                  </>
+                ) : (
+                  <>
+                    <CheckSquare className="mr-1 h-3 w-3" />
+                    Select All
+                  </>
+                )}
+              </Button>
+            </div>
           </CardTitle>
           <CardDescription>
-            Complete list of CFT documents with search and filtering
+            Complete document management with versioning, bulk operations, and advanced search
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Document Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead>Meeting</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {(documents.length > 0 ? documents : sampleDocuments).map((doc) => (
-                <TableRow key={doc.id}>
-                  <TableCell className="font-medium">{doc.name}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
-                      {doc.category || (doc.type === "agenda" ? "Agenda" :
-                       doc.type === "protocol" ? "Protocol" : "RAFP")}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{doc.uploadedAt || doc.date}</TableCell>
-                  <TableCell>{doc.size}</TableCell>
-                  <TableCell>
-                    {doc.meeting ? (
-                      <Badge variant="secondary">{doc.meeting}</Badge>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant={
-                        doc.status === "active" ? "default" :
-                        doc.status === "approved" ? "default" : "secondary"
-                      }
-                    >
-                       {doc.status === "active" ? "Active" :
-                        doc.status === "approved" ? "Approved" : "Pending"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end space-x-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleSuccess("Preview functionality coming soon")}
-                        aria-label={`Preview ${doc.name}`}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleDownload(doc.id, doc.name)}
-                        disabled={isDownloading}
-                        aria-label={`Download ${doc.name}`}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleDeleteDocument(doc.id, doc.name)}
-                        disabled={isDeleting}
-                        aria-label={`Delete ${doc.name}`}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          {isLoadingDocs ? (
+            <DocumentTableSkeleton />
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={documents.length > 0 && selectedDocuments.size === documents.length}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedDocuments(new Set(documents.map(d => d.id)));
+                        } else {
+                          setSelectedDocuments(new Set());
+                        }
+                      }}
+                    />
+                  </TableHead>
+                  <TableHead>Document Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Size</TableHead>
+                  <TableHead>Uploaded By</TableHead>
+                  <TableHead>Version</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {documents.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                      No documents found. Upload your first document to get started.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  documents.map((doc) => (
+                    <TableRow key={doc.id} className={selectedDocuments.has(doc.id) ? "bg-muted/50" : ""}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedDocuments.has(doc.id)}
+                          onCheckedChange={(checked) => handleDocumentSelect(doc.id, !!checked)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-3">
+                          <FileText className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <p className="font-medium">{doc.name}</p>
+                            {doc.description && (
+                              <p className="text-xs text-muted-foreground truncate max-w-48">
+                                {doc.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{doc.type}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{doc.category}</Badge>
+                      </TableCell>
+                      <TableCell className="text-sm">{doc.uploadedAt}</TableCell>
+                      <TableCell className="text-sm">{doc.size}</TableCell>
+                      <TableCell className="text-sm">{doc.uploadedBy}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Badge variant="outline" className="text-xs">
+                            v{doc.currentVersion}
+                          </Badge>
+                          {doc.versions && doc.versions.length > 1 && (
+                            <span className="text-xs text-muted-foreground">
+                              ({doc.versions.length} versions)
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end space-x-1">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => setPreviewDocument(doc)}
+                            aria-label={`Preview ${doc.name}`}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => setVersionDocument(doc)}
+                            aria-label={`Version history for ${doc.name}`}
+                          >
+                            <History className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleDownload(doc.id, doc.name)}
+                            disabled={isDownloading}
+                            aria-label={`Download ${doc.name}`}
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleDeleteDocument(doc.id, doc.name)}
+                            disabled={isDeleting}
+                            aria-label={`Delete ${doc.name}`}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
-      {/* Document Upload Area */}
+      {/* Upload Area */}
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle>Upload Area</CardTitle>
+          <CardTitle className="flex items-center">
+            <Upload className="mr-2 h-5 w-5" />
+            Quick Upload
+          </CardTitle>
           <CardDescription>
-            Drag and drop your documents here or click to select
+            Drag and drop files or click to browse
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="border-2 border-dashed border-border rounded-lg p-8 text-center bg-gradient-card">
+          <div 
+            className="border-2 border-dashed border-border rounded-lg p-8 text-center bg-gradient-card hover:bg-muted/50 transition-colors cursor-pointer"
+            onClick={handleUploadClick}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => {
+              e.preventDefault();
+              const files = Array.from(e.dataTransfer.files);
+              if (files[0]) {
+                const event = { target: { files } } as any;
+                handleFileUpload(event);
+              }
+            }}
+          >
             <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground mb-4">
-              Drag and drop your PDF files here
+            <p className="text-muted-foreground mb-2">
+              Drag and drop your documents here, or click to select
+            </p>
+            <p className="text-xs text-muted-foreground mb-4">
+              Supports PDF, DOC, DOCX, XLS, XLSX, TXT files
             </p>
             <Button 
-              onClick={handleUploadClick}
               disabled={isUploading}
               aria-label="Select files to upload"
             >
@@ -318,7 +507,28 @@ export default function Documents() {
         </CardContent>
       </Card>
 
-      {/* Confirmation Dialog */}
+      {/* Dialogs */}
+      <DocumentPreviewDialog
+        open={!!previewDocument}
+        onOpenChange={(open) => !open && setPreviewDocument(null)}
+        document={previewDocument}
+        onDownload={(doc) => handleDownload(doc.id, doc.name)}
+      />
+
+      <DocumentVersionDialog
+        open={!!versionDocument}
+        onOpenChange={(open) => !open && setVersionDocument(null)}
+        document={versionDocument}
+        onDocumentUpdated={() => {
+          const hasActiveFilters = Object.values(filters).some(value => value && value.trim() !== '');
+          const filtersToUse = hasActiveFilters ? filters : undefined;
+          loadDocuments(() => documentService.getDocuments(filtersToUse), {
+            onSuccess: (data) => setDocuments(data),
+            onError: (error) => handleError(error, "Failed to refresh documents")
+          });
+        }}
+      />
+
       <ConfirmDialog
         open={confirmDialog.open}
         onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}
