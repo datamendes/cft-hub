@@ -13,6 +13,7 @@ import Knowledge from "./pages/Knowledge";
 import Settings from "./pages/Settings";
 import Workflows from "./pages/Workflows";
 import Analytics from "./pages/Analytics";
+import Collaboration from "./pages/Collaboration";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="/knowledge" element={<Knowledge />} />
               <Route path="/workflows" element={<Workflows />} />
               <Route path="/analytics" element={<Analytics />} />
+              <Route path="/collaboration" element={<Collaboration />} />
               <Route path="/settings" element={<Settings />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
