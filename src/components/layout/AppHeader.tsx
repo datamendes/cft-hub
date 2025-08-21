@@ -13,19 +13,25 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useTheme } from "next-themes"
 import { NotificationCenter } from "@/components/notifications/NotificationCenter"
+import { MobileNav } from "./MobileNav"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 export function AppHeader() {
   const { theme, setTheme } = useTheme()
+  const isMobile = useIsMobile()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-16 items-center justify-between px-6">
+      <div className="flex h-16 items-center justify-between px-4 md:px-6">
+        {/* Mobile Navigation */}
+        {isMobile && <MobileNav />}
+        
         {/* Search */}
         <div className="flex items-center flex-1 max-w-md">
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search documents, proposals, meetings..."
+              placeholder={isMobile ? "Search..." : "Search documents, proposals, meetings..."}
               className="pl-10 pr-4 bg-muted/50 border-0 focus-visible:ring-1 focus-visible:ring-ring"
             />
           </div>
