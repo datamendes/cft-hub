@@ -12,7 +12,8 @@ import {
   Upload,
   GitBranch,
   BarChart3,
-  MessageSquareText
+  MessageSquareText,
+  Shield
 } from "lucide-react"
 import { NavLink, useLocation, useNavigate } from "react-router-dom"
 import { cn } from "@/lib/utils"
@@ -70,6 +71,12 @@ const navigationItems = [
     url: "/collaboration", 
     icon: MessageSquareText,
     badge: "5"
+  },
+  { 
+    title: "Security", 
+    url: "/security", 
+    icon: Shield,
+    badge: null
   },
 ]
 

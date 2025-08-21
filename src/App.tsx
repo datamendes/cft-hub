@@ -14,7 +14,10 @@ import Settings from "./pages/Settings";
 import Workflows from "./pages/Workflows";
 import Analytics from "./pages/Analytics";
 import Collaboration from "./pages/Collaboration";
+import Security from "./pages/Security";
 import NotFound from "./pages/NotFound";
+import { AuthProvider } from "@/hooks/use-auth";
+import { AuditLogProvider } from "@/hooks/use-audit-log";
 
 const queryClient = new QueryClient();
 
@@ -24,23 +27,28 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <AppLayout>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/documents" element={<Documents />} />
-              <Route path="/meetings" element={<Meetings />} />
-              <Route path="/proposals" element={<Proposals />} />
-              <Route path="/knowledge" element={<Knowledge />} />
-              <Route path="/workflows" element={<Workflows />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/collaboration" element={<Collaboration />} />
-              <Route path="/settings" element={<Settings />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AppLayout>
-        </BrowserRouter>
+          <BrowserRouter>
+            <AuthProvider>
+              <AuditLogProvider>
+                <AppLayout>
+                  <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/documents" element={<Documents />} />
+                    <Route path="/meetings" element={<Meetings />} />
+                    <Route path="/proposals" element={<Proposals />} />
+                    <Route path="/knowledge" element={<Knowledge />} />
+                    <Route path="/workflows" element={<Workflows />} />
+                    <Route path="/analytics" element={<Analytics />} />
+                    <Route path="/collaboration" element={<Collaboration />} />
+                    <Route path="/security" element={<Security />} />
+                    <Route path="/settings" element={<Settings />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </AppLayout>
+              </AuditLogProvider>
+            </AuthProvider>
+          </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
