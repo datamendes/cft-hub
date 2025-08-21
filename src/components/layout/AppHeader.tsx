@@ -1,4 +1,4 @@
-import { Bell, Search, User, Moon, Sun } from "lucide-react"
+import { Search, User, Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useTheme } from "next-themes"
+import { NotificationCenter } from "@/components/notifications/NotificationCenter"
 
 export function AppHeader() {
   const { theme, setTheme } = useTheme()
@@ -45,15 +46,7 @@ export function AppHeader() {
           </Button>
 
           {/* Notifications */}
-          <Button variant="ghost" size="sm" className="h-9 w-9 p-0 relative">
-            <Bell className="h-4 w-4" />
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 h-5 w-5 text-xs flex items-center justify-center p-0"
-            >
-              3
-            </Badge>
-          </Button>
+          <NotificationCenter />
 
           {/* User Menu */}
           <DropdownMenu>

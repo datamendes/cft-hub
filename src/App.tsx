@@ -11,6 +11,7 @@ import Meetings from "./pages/Meetings";
 import Proposals from "./pages/Proposals";
 import Knowledge from "./pages/Knowledge";
 import Settings from "./pages/Settings";
+import Workflows from "./pages/Workflows";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
               <Route path="/meetings" element={<Meetings />} />
               <Route path="/proposals" element={<Proposals />} />
               <Route path="/knowledge" element={<Knowledge />} />
+              <Route path="/workflows" element={<Workflows />} />
               <Route path="/settings" element={<Settings />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
