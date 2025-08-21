@@ -10,7 +10,8 @@ import {
   ChevronRight,
   Plus,
   Upload,
-  GitBranch
+  GitBranch,
+  BarChart3
 } from "lucide-react"
 import { NavLink, useLocation, useNavigate } from "react-router-dom"
 import { cn } from "@/lib/utils"
@@ -56,6 +57,12 @@ const navigationItems = [
     url: "/workflows", 
     icon: GitBranch,
     badge: "2"
+  },
+  { 
+    title: "Analytics", 
+    url: "/analytics", 
+    icon: BarChart3,
+    badge: null
   },
 ]
 
