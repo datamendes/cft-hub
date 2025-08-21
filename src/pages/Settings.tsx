@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react"
 import { Settings as SettingsIcon, User, Shield, Database, Download, Upload } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -5,8 +6,131 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
+import { AuditLogDialog } from "@/components/dialogs/AuditLogDialog"
+import { useLoading } from "@/hooks/use-loading"
+import { settingsService, UserProfile, SystemSettings } from "@/services/settings-service"
+import { handleError, handleSuccess } from "@/lib/error-handling"
 
 export default function Settings() {
+  const [userProfile, setUserProfile] = useState<UserProfile>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    role: ''
+  })
+  const [systemSettings, setSystemSettings] = useState<SystemSettings>({
+    emailNotifications: true,
+    automaticDarkMode: false,
+    automaticBackup: true
+  })
+  const [auditDialogOpen, setAuditDialogOpen] = useState(false)
+  const [storageInfo, setStorageInfo] = useState({ used: 0, total: 0, percentage: 0 })
+  
+  const { isLoading: isLoadingProfile, withLoading: withLoadingProfile } = useLoading()
+  const { isLoading: isLoadingSettings, withLoading: withLoadingSettings } = useLoading()
+  const { isLoading: isReconfiguring, withLoading: withReconfiguring } = useLoading()
+  const { isLoading: isExporting, withLoading: withExporting } = useLoading()
+  const { isLoading: isImporting, withLoading: withImporting } = useLoading()
+
+  useEffect(() => {
+    loadSettings()
+  }, [])
+
+  const loadSettings = async () => {
+    try {
+      const [profileData, settingsData, storageData] = await Promise.all([
+        settingsService.getUserProfile(),
+        settingsService.getSystemSettings(),
+        settingsService.getStorageUsage()
+      ])
+      setUserProfile(profileData)
+      setSystemSettings(settingsData)
+      setStorageInfo(storageData)
+    } catch (error) {
+      handleError(error, "Failed to load settings")
+    }
+  }
+
+  const handleProfileSave = async () => {
+    try {
+      await withLoadingProfile(async () => {
+        const updatedProfile = await settingsService.updateUserProfile(userProfile)
+        setUserProfile(updatedProfile)
+        handleSuccess("Profile updated successfully")
+      })
+    } catch (error) {
+      handleError(error, "Failed to update profile")
+    }
+  }
+
+  const handleSystemSettingsChange = async (key: keyof SystemSettings, value: boolean) => {
+    const newSettings = { ...systemSettings, [key]: value }
+    setSystemSettings(newSettings)
+    
+    try {
+      await withLoadingSettings(async () => {
+        await settingsService.updateSystemSettings(newSettings)
+        handleSuccess("Settings updated successfully")
+      })
+    } catch (error) {
+      handleError(error, "Failed to update settings")
+      // Revert on error
+      setSystemSettings(systemSettings)
+    }
+  }
+
+  const handleReconfigureAzure = async () => {
+    try {
+      await withReconfiguring(async () => {
+        const newConnection = await settingsService.reconfigureAzureAD()
+        handleSuccess(`Azure AD reconfigured: ${newConnection}`)
+      })
+    } catch (error) {
+      handleError(error, "Failed to reconfigure Azure AD")
+    }
+  }
+
+  const handleExportData = async () => {
+    try {
+      await withExporting(async () => {
+        const blob = await settingsService.exportData()
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `cft-data-export-${new Date().toISOString().split('T')[0]}.json`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+        
+        handleSuccess("Data exported successfully")
+      })
+    } catch (error) {
+      handleError(error, "Failed to export data")
+    }
+  }
+
+  const handleImportData = async () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.json'
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (!file) return
+      
+      try {
+        await withImporting(async () => {
+          await settingsService.importData(file)
+          handleSuccess("Data imported successfully")
+          await loadSettings() // Reload settings
+        })
+      } catch (error) {
+        handleError(error, "Failed to import data")
+      }
+    }
+    input.click()
+  }
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -32,22 +156,40 @@ export default function Settings() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name</Label>
-              <Input id="firstName" defaultValue="Dr. Rodriguez" />
+              <Input 
+                id="firstName" 
+                value={userProfile.firstName}
+                onChange={(e) => setUserProfile(prev => ({ ...prev, firstName: e.target.value }))}
+                disabled={isLoadingProfile}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="lastName">Last Name</Label>
-              <Input id="lastName" defaultValue="Maria" />
+              <Input 
+                id="lastName" 
+                value={userProfile.lastName}
+                onChange={(e) => setUserProfile(prev => ({ ...prev, lastName: e.target.value }))}
+                disabled={isLoadingProfile}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" defaultValue="dr.rodriguez@hospital.com" />
+              <Input 
+                id="email" 
+                type="email" 
+                value={userProfile.email}
+                onChange={(e) => setUserProfile(prev => ({ ...prev, email: e.target.value }))}
+                disabled={isLoadingProfile}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
-              <Input id="role" defaultValue="CFT Administrator" disabled />
+              <Input id="role" value={userProfile.role} disabled />
             </div>
           </div>
-          <Button>Save Changes</Button>
+          <Button onClick={handleProfileSave} disabled={isLoadingProfile}>
+            {isLoadingProfile ? "Saving..." : "Save Changes"}
+          </Button>
         </CardContent>
       </Card>
 
@@ -70,7 +212,11 @@ export default function Settings() {
                 Receive notifications for new proposals
               </p>
             </div>
-            <Switch defaultChecked />
+            <Switch 
+              checked={systemSettings.emailNotifications}
+              onCheckedChange={(checked) => handleSystemSettingsChange('emailNotifications', checked)}
+              disabled={isLoadingSettings}
+            />
           </div>
           
           <Separator />
@@ -82,7 +228,11 @@ export default function Settings() {
                 Switch automatically based on system time
               </p>
             </div>
-            <Switch />
+            <Switch 
+              checked={systemSettings.automaticDarkMode}
+              onCheckedChange={(checked) => handleSystemSettingsChange('automaticDarkMode', checked)}
+              disabled={isLoadingSettings}
+            />
           </div>
           
           <Separator />
@@ -94,7 +244,11 @@ export default function Settings() {
                 Automatic cloud synchronization
               </p>
             </div>
-            <Switch defaultChecked />
+            <Switch 
+              checked={systemSettings.automaticBackup}
+              onCheckedChange={(checked) => handleSystemSettingsChange('automaticBackup', checked)}
+              disabled={isLoadingSettings}
+            />
           </div>
         </CardContent>
       </Card>
@@ -114,8 +268,14 @@ export default function Settings() {
           <div className="space-y-2">
             <Label>Azure AD Connection</Label>
             <div className="flex items-center space-x-2">
-              <Input defaultValue="Connected - hospital.onmicrosoft.com" disabled />
-              <Button variant="outline">Reconfigure</Button>
+              <Input value="Connected - hospital.onmicrosoft.com" disabled />
+              <Button 
+                variant="outline" 
+                onClick={handleReconfigureAzure}
+                disabled={isReconfiguring}
+              >
+                {isReconfiguring ? "Reconfiguring..." : "Reconfigure"}
+              </Button>
             </div>
           </div>
           
@@ -129,7 +289,11 @@ export default function Settings() {
             <p className="text-sm text-muted-foreground">
               All actions are recorded for audit
             </p>
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setAuditDialogOpen(true)}
+            >
               View Log
             </Button>
           </div>
@@ -154,9 +318,23 @@ export default function Settings() {
               <p className="text-sm text-muted-foreground">
                 Export all data in JSON format
               </p>
-              <Button variant="outline" className="w-full">
-                <Download className="mr-2 h-4 w-4" />
-                Export Data
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={handleExportData}
+                disabled={isExporting}
+              >
+                {isExporting ? (
+                  <>
+                    <Download className="mr-2 h-4 w-4 animate-spin" />
+                    Exporting...
+                  </>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-4 w-4" />
+                    Export Data
+                  </>
+                )}
               </Button>
             </div>
             
@@ -165,9 +343,23 @@ export default function Settings() {
               <p className="text-sm text-muted-foreground">
                 Import data from JSON file
               </p>
-              <Button variant="outline" className="w-full">
-                <Upload className="mr-2 h-4 w-4" />
-                Import Data
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={handleImportData}
+                disabled={isImporting}
+              >
+                {isImporting ? (
+                  <>
+                    <Upload className="mr-2 h-4 w-4 animate-spin" />
+                    Importing...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Import Data
+                  </>
+                )}
               </Button>
             </div>
           </div>
@@ -181,13 +373,20 @@ export default function Settings() {
             </p>
             <div className="flex items-center space-x-2">
               <div className="flex-1 bg-muted rounded-full h-2">
-                <div className="bg-primary h-2 rounded-full" style={{ width: "65%" }}></div>
+                <div className="bg-primary h-2 rounded-full" style={{ width: `${storageInfo.percentage}%` }}></div>
               </div>
-              <span className="text-sm text-muted-foreground">65% used</span>
+              <span className="text-sm text-muted-foreground">
+                {storageInfo.percentage}% used ({storageInfo.used}/{storageInfo.total} MB)
+              </span>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      <AuditLogDialog
+        open={auditDialogOpen}
+        onOpenChange={setAuditDialogOpen}
+      />
     </div>
   )
 }
