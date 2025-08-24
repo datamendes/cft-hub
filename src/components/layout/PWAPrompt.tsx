@@ -12,7 +12,14 @@ export function PWAPrompt() {
   const { toast } = useToast()
 
   useEffect(() => {
-    // Show prompt after 30 seconds if app is installable and not dismissed
+    const storedDismissed = localStorage.getItem('pwa-prompt-dismissed')
+    if (storedDismissed === 'true') {
+      setDismissed(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    // Show prompt after 30 seconds if app is installable and not previously dismissed
     const timer = setTimeout(() => {
       if (isInstallable && !isInstalled && !dismissed) {
         setShowPrompt(true)
@@ -60,7 +67,7 @@ export function PWAPrompt() {
     localStorage.setItem('pwa-prompt-dismissed', 'true')
   }
 
-  // Don't show if already installed or user dismissed
+  // Don't show if already installed, not installable, or user previously dismissed
   if (isInstalled || !isInstallable || !showPrompt) {
     return null
   }
