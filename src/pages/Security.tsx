@@ -17,8 +17,9 @@ export default function Security() {
 
   const handleRoleToggle = (role: typeof roleOptions[number], checked: boolean | string) => {
     if (!user) return;
+    if (checked === 'indeterminate') return;
     const next = new Set(user.roles);
-    if (checked) next.add(role as any); else next.delete(role as any);
+    if (checked === true) next.add(role as any); else next.delete(role as any);
     setRoles(Array.from(next) as any);
     addEvent({
       actor: { id: user.id, name: user.name, email: user.email },
